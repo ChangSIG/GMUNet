@@ -19,16 +19,16 @@ class setting_config:
         'depths': [2, 2, 2, 2],
         'depths_decoder': [2, 2, 2, 1],
         'drop_path_rate': 0.2,
-        'load_ckpt_path': './checkpoints/vssmsmall_dp03_ckpt_epoch_238.pth',
+        'load_ckpt_path': None,
     }
     datasets_name = 'synapse'
     input_size_h = 224
     input_size_w = 224
     if datasets_name == 'synapse':
-        data_path = 'data/Synapse/train_npz/'
+        data_path = '/home/zcc/PycharmProjects/MedSegData/Synapse/train_npz/'
         datasets = Synapse_dataset
-        list_dir = 'data/Synapse/lists/lists_Synapse/'
-        volume_path = 'data/Synapse/test_vol_h5/'
+        list_dir = '/home/zcc/PycharmProjects/MedSegData/Synapse/lists/lists_Synapse/'
+        volume_path = '/home/zcc/PycharmProjects/MedSegData/Synapse/test_vol_h5/'
     else:
         raise Exception('datasets in not right!')
 
@@ -46,12 +46,11 @@ class setting_config:
     world_size = None
     rank = None
     amp = False
-
+    gpu_id = '0'
     batch_size = 16
     epochs = 300
     work_dir = 'results/' + network + 'V5_' + datasets_name + '_' + datetime.now().strftime(
         '%A_%d_%B_%Y_%Hh_%Mm_%Ss') + '/'
-    # 'D:/CODES/MedSeg/BIBM22/results/datrm2_isic18_Sunday_04_September_2022_12h_04m_10s/'
     print_interval = 20
     val_interval = 1
     test_weights_path = ''

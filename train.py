@@ -1,5 +1,5 @@
 from torch.utils.data import DataLoader
-from datasets.dataset import NPY_datasets, Synapse_dataset
+from datasets.dataset import NPY_datasets
 from tensorboardX import SummaryWriter
 from models.GMUNet import GMUNet
 
@@ -7,8 +7,7 @@ from engine import *
 import sys
 
 from utils import *
-# from configs.config_setting import setting_config
-from configs.config_setting_synapse import setting_config
+from configs.config_setting import setting_config
 
 import warnings
 
@@ -40,15 +39,13 @@ def main(config):
     torch.cuda.empty_cache()
 
     print('#----------Preparing dataset----------#')
-    # train_dataset = NPY_datasets(config.data_path, config, train=True)
-    train_dataset = Synapse_dataset(config.data_path, config.list_dir, 'train')
+    train_dataset = NPY_datasets(config.data_path, config, train=True)
     train_loader = DataLoader(train_dataset,
                               batch_size=config.batch_size,
                               shuffle=True,
                               pin_memory=True,
                               num_workers=config.num_workers)
-    # val_dataset = NPY_datasets(config.data_path, config, train=False)
-    val_dataset = Synapse_dataset(config.data_path, config.list_dir, 'test')
+    val_dataset = NPY_datasets(config.data_path, config, train=False)
     val_loader = DataLoader(val_dataset,
                             batch_size=1,
                             shuffle=False,
@@ -58,7 +55,7 @@ def main(config):
 
     print('#----------Prepareing Model----------#')
     model_cfg = config.model_config
-    if config.network == 'network':
+    if config.network == 'gmunet':
         model = GMUNet(
             num_classes=model_cfg['num_classes'],
             input_channels=model_cfg['input_channels'],
@@ -66,11 +63,12 @@ def main(config):
             depths_decoder=model_cfg['depths_decoder'],
             drop_path_rate=model_cfg['drop_path_rate'],
             load_ckpt_path=model_cfg['load_ckpt_path'],
+            ds='isic',
         )
         model.load_from()
 
     else:
-        raise Exception('network in not right!')
+        raise Exception('network is not right!')
     model = model.cuda()
 
     cal_params_flops(model, 256, logger)

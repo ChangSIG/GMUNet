@@ -15,31 +15,31 @@ import time
 
 def train_one_epoch(train_loader,
                     model,
-                    criterion, 
-                    optimizer, 
+                    criterion,
+                    optimizer,
                     scheduler,
-                    epoch, 
-                    logger, 
-                    config, 
+                    epoch,
+                    logger,
+                    config,
                     scaler=None):
     '''
     train model for one epoch
     '''
     stime = time.time()
-    model.train() 
- 
+    model.train()
+
     loss_list = []
 
     for iter, data in enumerate(train_loader):
         optimizer.zero_grad()
 
         images, targets = data['image'], data['label']
-        images, targets = images.cuda(non_blocking=True).float(), targets.cuda(non_blocking=True).float()   
+        images, targets = images.cuda(non_blocking=True).float(), targets.cuda(non_blocking=True).float()
 
         if config.amp:
             with autocast():
                 out = model(images)
-                loss = criterion(out, targets)      
+                loss = criterion(out, targets)
             scaler.scale(loss).backward()
             scaler.step(optimizer)
             scaler.update()
@@ -58,23 +58,20 @@ def train_one_epoch(train_loader,
             logger.info(log_info)
     scheduler.step()
     etime = time.time()
-    log_info = f'Finish one epoch train: epoch {epoch}, loss: {mean_loss:.4f}, time(s): {etime-stime:.2f}'
+    log_info = f'Finish one epoch train: epoch {epoch}, loss: {mean_loss:.4f}, time(s): {etime - stime:.2f}'
     print(log_info)
     logger.info(log_info)
     return mean_loss
 
 
-
-
-
 def val_one_epoch(test_datasets,
-                    test_loader,
-                    model,
-                    epoch, 
-                    logger,
-                    config,
-                    test_save_path,
-                    val_or_test=False):
+                  test_loader,
+                  model,
+                  epoch,
+                  logger,
+                  config,
+                  test_save_path,
+                  val_or_test=False):
     # switch to evaluate mode
     stime = time.time()
     model.eval()
@@ -83,23 +80,26 @@ def val_one_epoch(test_datasets,
         i_batch = 0
         for data in tqdm(test_loader):
             img, msk, case_name = data['image'], data['label'], data['case_name'][0]
-            metric_i = test_single_volume(img, msk, model, classes=config.num_classes, patch_size=[config.input_size_h, config.input_size_w],
-                                    test_save_path=test_save_path, case=case_name, z_spacing=config.z_spacing, val_or_test=val_or_test)
+            metric_i = test_single_volume(img, msk, model, classes=config.num_classes,
+                                          patch_size=[config.input_size_h, config.input_size_w],
+                                          test_save_path=test_save_path, case=case_name, z_spacing=config.z_spacing,
+                                          val_or_test=val_or_test)
             metric_list += np.array(metric_i)
 
             logger.info('idx %d case %s mean_dice %f mean_hd95 %f' % (i_batch, case_name,
-                        np.mean(metric_i, axis=0)[0], np.mean(metric_i, axis=0)[1]))
+                                                                      np.mean(metric_i, axis=0)[0],
+                                                                      np.mean(metric_i, axis=0)[1]))
             i_batch += 1
         metric_list = metric_list / len(test_datasets)
         performance = np.mean(metric_list, axis=0)[0]
         mean_hd95 = np.mean(metric_list, axis=0)[1]
         for i in range(1, config.num_classes):
-            logger.info('Mean class %d mean_dice %f mean_hd95 %f' % (i, metric_list[i-1][0], metric_list[i-1][1]))
+            logger.info('Mean class %d mean_dice %f mean_hd95 %f' % (i, metric_list[i - 1][0], metric_list[i - 1][1]))
         performance = np.mean(metric_list, axis=0)[0]
         mean_hd95 = np.mean(metric_list, axis=0)[1]
         etime = time.time()
-        log_info = f'val epoch: {epoch}, mean_dice: {performance}, mean_hd95: {mean_hd95}, time(s): {etime-stime:.2f}'
+        log_info = f'val epoch: {epoch}, mean_dice: {performance}, mean_hd95: {mean_hd95}, time(s): {etime - stime:.2f}'
         print(log_info)
         logger.info(log_info)
-    
+
     return performance, mean_hd95

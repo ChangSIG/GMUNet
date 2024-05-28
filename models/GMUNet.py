@@ -593,7 +593,10 @@ class VSSM(nn.Module):
             )
             self.layers.append(layer)
 
-        self.sc_att = sc_attn(dims[-1], 3, 8, 8)
+        if kwargs['ds'] == 'isic':
+            self.sc_att = sc_attn(dims[-1], 3, 8, 8)
+        elif kwargs['ds'] == 'synapse':
+            self.sc_att = sc_attn(dims[-1], 3, 7, 7)
 
         self.layers_up = nn.ModuleList()
         self.gc_up = nn.ModuleList()
@@ -698,6 +701,7 @@ class GMUNet(nn.Module):
                  depths_decoder=[2, 9, 2, 2],
                  drop_path_rate=0.2,
                  load_ckpt_path=None,
+                 ds='isic',
                  ):
         super().__init__()
 
@@ -709,6 +713,7 @@ class GMUNet(nn.Module):
                            depths=depths,
                            depths_decoder=depths_decoder,
                            drop_path_rate=drop_path_rate,
+                           ds=ds
                            )
 
     def forward(self, x):

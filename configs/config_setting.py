@@ -16,14 +16,14 @@ class setting_config:
         'depths': [2, 2, 2, 2],
         'depths_decoder': [2, 2, 2, 1],
         'drop_path_rate': 0.2,
-        'load_ckpt_path': './checkpoints/vssmsmall_dp03_ckpt_epoch_238.pth',
+        'load_ckpt_path': None,
     }
 
     datasets = 'isic18'
     if datasets == 'isic18':
-        data_path = 'data/isic2018/'
+        data_path = '/home/zcc/PycharmProjects/MedSegData/isic2018/'
     elif datasets == 'isic17':
-        data_path = 'data/isic2017/'
+        data_path = '/home/zcc/PycharmProjects/MedSegData/isic2017/'
     else:
         raise Exception('datasets in not right!')
 
@@ -42,7 +42,7 @@ class setting_config:
     rank = None
     amp = False
     gpu_id = '0'
-    batch_size = 16
+    batch_size = 4
     epochs = 300
 
     work_dir = 'results/' + network + 'V5_' + datasets + '_' + datetime.now().strftime('%A_%d_%B_%Y_%Hh_%Mm_%Ss') + '/'
